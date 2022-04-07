@@ -1,20 +1,20 @@
 package client
 
-import okhttp3.*
-import java.util.Scanner
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 fun main() {
     val websockets = connect()
     println("Client started")
-    val sc = Scanner(System.`in`)
 
     while (true) {
-        println("Input message or exit ")
-        val msg = sc.next()
-        when (msg) {
+        println("Input message or command Exit ")
+        when (val msg = readLine()!!) {
             "exit" -> {
+                websockets.close(1000,"Exit")
                 exitProcess(0)
             }
             else -> {
@@ -26,7 +26,6 @@ fun main() {
 }
 
 fun connect(): WebSocket {
-
     val client = OkHttpClient.Builder()
         .readTimeout(3, TimeUnit.SECONDS)
         .build()
