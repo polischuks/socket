@@ -29,7 +29,7 @@ class WebSocketServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
     override fun onMessage(conn: WebSocket?, message: String?) {
         val toClientMessage = "${conn?.getAttachment<Int>()}: $message"
         println("Input msg ${toClientMessage}")
-        sendToAll(toClientMessage)
+        sendToAll("Server resend you message " + toClientMessage)
     }
 
     override fun onStart() {
