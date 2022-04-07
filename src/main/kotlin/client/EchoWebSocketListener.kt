@@ -22,6 +22,7 @@ class EchoWebSocketListener : WebSocketListener() {
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         super.onClosing(webSocket, code, reason)
+        println("You input command Exit. Bye")
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
