@@ -1,13 +1,17 @@
 package server
 
+import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
-import org.java_websocket.WebSocket
-import java.lang.Exception
 import java.net.InetSocketAddress
 
-class WebSocketServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
+fun main() {
+    val DEFAULT_PORT = 8885
+    val server = EchoWebSocketServer(DEFAULT_PORT)
+    server.start()
+}
 
+class EchoWebSocketServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
     private var nextId = 0
 
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
@@ -15,55 +19,27 @@ class WebSocketServer(port: Int) : WebSocketServer(InetSocketAddress(port)) {
             ++nextId
         }
         val message = "#$id connected"
-        sendToAll(message)
+        conn?.send(message)
         println(message)
         conn?.setAttachment(id)
+
     }
 
     override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
-        val message = "#${conn?.getAttachment<Int>()} disconnected"
-        sendToAll(message)
-        println(message)
+
     }
 
     override fun onMessage(conn: WebSocket?, message: String?) {
         val toClientMessage = "${conn?.getAttachment<Int>()}: $message"
-        println("Input msg ${toClientMessage}")
-        sendToAll("Server resend you message " + toClientMessage)
+        conn?.send("Server resend you message => $toClientMessage")
+    }
+
+    override fun onError(conn: WebSocket?, ex: Exception?) {
+        println("error: $ex")
     }
 
     override fun onStart() {
-        println("server starts on port $port")
+        println("Server started on port $port")
     }
 
-    override fun onError(conn: WebSocket?, e: Exception?) {
-        println("error: $e")
-    }
-
-    private fun sendToAll(message: String) {
-        connections.filter(WebSocket::isOpen).forEach { openedConnection ->
-            try {
-                openedConnection.send(message)
-            } catch (t: Throwable) {
-            }
-        }
-    }
-}
-
-object Main {
-
-    @JvmStatic
-    fun main(vararg args: String) {
-        val DEFAULT_PORT = 8885
-        val server = WebSocketServer(DEFAULT_PORT).apply {
-            isReuseAddr = true
-            start()
-        }
-
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                server.stop()
-            }
-        })
-    }
 }
